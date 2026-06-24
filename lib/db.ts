@@ -15,4 +15,4 @@ if (!g._mysqlPool) {
   });
 }
 
-export default g._mysqlPool;
+export default g._mysqlPool as mysql.Pool;
