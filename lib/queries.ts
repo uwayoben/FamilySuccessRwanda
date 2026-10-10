@@ -166,6 +166,19 @@ export async function getGallery(): Promise<GalleryItem[]> {
   return rows as GalleryItem[];
 }
 
+export async function getSetting(key: string): Promise<string | null> {
+  try {
+    const [rows] = await pool.execute(
+      "SELECT setting_value FROM site_settings WHERE setting_key = ? LIMIT 1",
+      [key]
+    ) as any[];
+    return (rows as any[])[0]?.setting_value || null;
+  } catch {
+    // Table may not exist yet if migrations haven't run — fall back to defaults.
+    return null;
+  }
+}
+
 export async function getProgramBySlug(slug: string): Promise<Program | null> {
   const [rows] = await pool.execute(
     "SELECT * FROM programs WHERE slug = ? AND is_active = 1 LIMIT 1",

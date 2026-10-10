@@ -3,35 +3,8 @@
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import {
-  ChevronLeft, ChevronRight, ArrowRight,
-  Globe, GraduationCap, BookOpen, Users, Target,
-  Sparkles, Heart, HeartHandshake, Scale, Handshake,
-  Leaf, Star, Flame, Feather, TrendingUp, Baby, Activity, Home,
-  type LucideIcon,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowRight } from "lucide-react";
 import type { HeroSlide } from "@/lib/queries";
-
-const ICON_MAP: Record<string, LucideIcon> = {
-  globe: Globe,
-  "graduation-cap": GraduationCap,
-  "book-open": BookOpen,
-  users: Users,
-  target: Target,
-  sparkles: Sparkles,
-  heart: Heart,
-  "heart-handshake": HeartHandshake,
-  scale: Scale,
-  handshake: Handshake,
-  leaf: Leaf,
-  star: Star,
-  flame: Flame,
-  feather: Feather,
-  "trending-up": TrendingUp,
-  baby: Baby,
-  activity: Activity,
-  home: Home,
-};
 
 export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   const [current, setCurrent] = useState(0);
@@ -58,7 +31,6 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
   }, [paused, slides.length]);
 
   const slide = slides[current];
-  const SlideIcon = ICON_MAP[slide?.icon_name] ?? Globe;
 
   if (!slides.length) return null;
 
@@ -101,33 +73,6 @@ export default function HeroSlider({ slides }: { slides: HeroSlide[] }) {
               <Link href={slide.cta2_href} className="inline-flex items-center justify-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/30 text-white font-semibold px-7 py-4 rounded-full text-sm transition-all duration-200">
                 {slide.cta2_label} <ArrowRight className="w-4 h-4" />
               </Link>
-            </div>
-          </div>
-
-          {/* Right: Stat card */}
-          <div key={`card-${current}`} className="hidden lg:flex items-center justify-center animate-fade-in">
-            <div className="relative w-full max-w-xs">
-              <div className="bg-black/30 backdrop-blur-md border border-white/20 rounded-3xl p-10 text-center shadow-2xl">
-                <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-5">
-                  <SlideIcon className="w-10 h-10 text-orange-400" />
-                </div>
-                <p className="text-6xl font-extrabold text-orange-400 leading-none mb-2">{slide.stat_value}</p>
-                <p className="text-white font-bold text-base">{slide.stat_label}</p>
-                <div className="mt-7 pt-6 border-t border-white/20 space-y-2.5">
-                  {slide.bullets.map(item => (
-                    <div key={item} className="flex items-center gap-2 text-white/75 text-sm">
-                      <span className="w-1.5 h-1.5 bg-orange-400 rounded-full flex-shrink-0" />
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="absolute -top-4 -left-5 bg-white rounded-xl px-3 py-2 shadow-lg text-xs font-bold text-emerald-700 whitespace-nowrap">
-                ✓ RGB Registered NGO
-              </div>
-              <div className="absolute -bottom-4 -right-5 bg-orange-500 rounded-xl px-3 py-2 shadow-lg text-xs font-bold text-white whitespace-nowrap">
-                100% Transparent
-              </div>
             </div>
           </div>
         </div>

@@ -1,13 +1,14 @@
 import Link from "next/link";
+import Image from "next/image";
 import {
-  Heart, ArrowRight, CheckCircle, BookOpen, Wrench, GraduationCap, Star,
+  Heart, ArrowRight, BookOpen, Wrench, GraduationCap, Star,
   Globe, Users, TrendingUp, Baby, Activity, Home,
-  Sparkles, HeartHandshake, Scale, Handshake, Leaf,
+  Sparkles, HeartHandshake, Scale, Handshake, Leaf, Target, Eye,
   type LucideIcon,
 } from "lucide-react";
 import HeroSlider from "@/components/HeroSlider";
 import PartnersSlider from "@/components/PartnersSlider";
-import { getHeroSlides, getPartners, getCoreValues, getPrograms } from "@/lib/queries";
+import { getHeroSlides, getPartners, getCoreValues, getPrograms, getSetting } from "@/lib/queries";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   "graduation-cap": GraduationCap, users: Users, "trending-up": TrendingUp,
@@ -16,12 +17,16 @@ const ICON_MAP: Record<string, LucideIcon> = {
   scale: Scale, handshake: Handshake, leaf: Leaf, star: Star,
 };
 
+// Stock fallback shown until an image is uploaded in Admin → Home Page.
+const DEFAULT_WHO_WE_ARE_IMAGE = "https://images.unsplash.com/photo-1598605170898-853b9ae903fc?w=1200&q=80";
+
 export default async function HomePage() {
-  const [slides, partners, coreValues, programs] = await Promise.all([
+  const [slides, partners, coreValues, programs, whoWeAreImage] = await Promise.all([
     getHeroSlides(),
     getPartners(),
     getCoreValues(),
     getPrograms(),
+    getSetting("who_we_are_image"),
   ]);
 
   return (
@@ -33,23 +38,16 @@ export default async function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="relative order-2 md:order-1">
-              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-3xl p-8 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-orange-100 rounded-full -translate-y-10 translate-x-10" />
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-emerald-200 rounded-full translate-y-8 -translate-x-8" />
-                <div className="relative z-10 space-y-4">
-                  {[
-                    "Christian-led humanitarian values",
-                    "Locally-led, community-rooted",
-                    "Aligned with Rwanda NST1 & SDGs",
-                    "Fully registered & audited NGO",
-                    "Child protection policy in place",
-                  ].map(item => (
-                    <div key={item} className="flex items-start gap-3 bg-white rounded-xl p-4 shadow-sm">
-                      <CheckCircle className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-0.5" />
-                      <p className="text-gray-700 text-sm font-medium">{item}</p>
-                    </div>
-                  ))}
-                </div>
+              <div className="absolute -top-4 -left-4 w-32 h-32 bg-orange-100 rounded-3xl" />
+              <div className="absolute -bottom-4 -right-4 w-40 h-40 bg-emerald-100 rounded-3xl" />
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-xl">
+                <Image
+                  src={whoWeAreImage ?? DEFAULT_WHO_WE_ARE_IMAGE}
+                  alt="Family Success Rwanda serving families in Nyaruguru District"
+                  fill
+                  sizes="(min-width: 768px) 50vw, 100vw"
+                  className="object-cover"
+                />
               </div>
             </div>
             <div className="order-1 md:order-2">
@@ -70,6 +68,45 @@ export default async function HomePage() {
                 <a href="tel:+250788316227" className="inline-flex items-center justify-center gap-2 border-2 border-emerald-700 text-emerald-700 hover:bg-emerald-50 font-semibold px-6 py-3 rounded-full transition-colors">
                   +250 788 316 227
                 </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Mission & Vision */}
+      <section className="section-padding bg-emerald-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <span className="text-orange-600 font-semibold text-sm uppercase tracking-wider">Purpose</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mt-3">
+              Mission & <span className="text-emerald-700">Vision</span>
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <div className="bg-white rounded-3xl p-8 shadow-sm border border-emerald-100 relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-50 rounded-full -translate-y-8 translate-x-8" />
+              <div className="relative z-10">
+                <div className="w-14 h-14 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
+                  <Target className="w-7 h-7 text-emerald-700" />
+                </div>
+                <h3 className="text-2xl font-extrabold text-gray-900 mb-4">Our Mission</h3>
+                <p className="text-gray-600 leading-relaxed text-base italic">
+                  &quot;To serve and empower the most vulnerable community through the Word of God and in deed, while in partnership with families and churches, so that Rwandans feel loved and supported and have increased dignity, hope, and spiritual wellbeing.&quot;
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-emerald-800 rounded-3xl p-8 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-700 rounded-full -translate-y-8 translate-x-8" />
+              <div className="relative z-10">
+                <div className="w-14 h-14 bg-white/10 rounded-2xl flex items-center justify-center mb-6">
+                  <Eye className="w-7 h-7 text-orange-400" />
+                </div>
+                <h3 className="text-2xl font-extrabold text-white mb-4">Our Vision</h3>
+                <p className="text-emerald-100 leading-relaxed text-base italic">
+                  &quot;To see Rwandan families live in love and peace, families honouring God and fulfilling their basic needs, and able to access holistic transformation.&quot;
+                </p>
               </div>
             </div>
           </div>

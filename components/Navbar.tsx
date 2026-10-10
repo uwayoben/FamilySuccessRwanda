@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { Menu, X, ChevronDown } from "lucide-react";
+import { Menu, X, ChevronDown, Phone, Mail, MapPin } from "lucide-react";
 
 const aboutDropdown = [
   { href: "/about", label: "Background", desc: "Mission, vision & values" },
@@ -55,6 +55,23 @@ export default function Navbar() {
 
   return (
     <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? "bg-white shadow-lg" : "bg-transparent"}`}>
+      {/* Top Bar — desktop only, collapses on scroll */}
+      <div className={`hidden md:block bg-emerald-900 text-emerald-100 overflow-hidden transition-all duration-300 ${scrolled ? "max-h-0" : "max-h-9"}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-9 flex items-center justify-between text-xs">
+          <div className="flex items-center gap-6">
+            <a href="tel:+250788316227" className="flex items-center gap-1.5 hover:text-orange-400 transition-colors">
+              <Phone className="w-3.5 h-3.5 text-orange-400" /> +250 788 316 227
+            </a>
+            <a href="mailto:info@familysuccessrwanda.org" className="flex items-center gap-1.5 hover:text-orange-400 transition-colors">
+              <Mail className="w-3.5 h-3.5 text-orange-400" /> info@familysuccessrwanda.org
+            </a>
+          </div>
+          <span className="flex items-center gap-1.5">
+            <MapPin className="w-3.5 h-3.5 text-orange-400" /> Nyaruguru District, Mata Sector, Rwanda
+          </span>
+        </div>
+      </div>
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
 

@@ -65,14 +65,15 @@ export default function Footer() {
             <p className="text-orange-400 font-semibold italic">&quot;Transforming Lives Together&quot;</p>
             <div className="flex gap-3 mt-5">
               {[
-                { icon: FacebookIcon, href: "#", label: "Facebook" },
-                { icon: TwitterIcon, href: "#", label: "Twitter" },
+                { icon: FacebookIcon, href: "https://web.facebook.com/profile.php?id=61585579721163", label: "Facebook" },
+                { icon: TwitterIcon, href: "https://x.com/FSRwanda", label: "Twitter" },
                 { icon: InstagramIcon, href: "#", label: "Instagram" },
                 { icon: YoutubeIcon, href: "#", label: "YouTube" },
               ].map(({ icon: Icon, href, label }) => (
                 <a
                   key={label}
                   href={href}
+                  {...(href.startsWith("http") ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                   aria-label={label}
                   className="w-9 h-9 bg-emerald-800 hover:bg-orange-500 rounded-full flex items-center justify-center transition-colors duration-200"
                 >
@@ -163,12 +164,6 @@ export default function Footer() {
                 </div>
               </li>
             </ul>
-            <div className="mt-6 bg-emerald-900 rounded-lg p-4">
-              <p className="text-emerald-200 text-xs">
-                Registered with Rwanda Governance Board<br />
-                <span className="text-orange-400 font-medium">No. 840/RGB/NGO/LP/07/2022</span>
-              </p>
-            </div>
           </div>
         </div>
       </div>

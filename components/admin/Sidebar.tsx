@@ -19,6 +19,7 @@ import {
   UserCheck,
   Handshake,
   GalleryHorizontal,
+  Home,
 } from "lucide-react";
 
 const navItems = [
@@ -26,6 +27,7 @@ const navItems = [
   { href: "/admin/donations",   label: "Donations",    icon: DollarSign,      group: "Activity" },
   { href: "/admin/messages",    label: "Messages",     icon: MessageSquare,   group: "Activity" },
   { href: "/admin/subscribers", label: "Subscribers",  icon: Users,           group: "Activity" },
+  { href: "/admin/homepage",    label: "Home Page",    icon: Home,            group: "Content" },
   { href: "/admin/programs",    label: "Programs",     icon: GraduationCap,   group: "Content" },
   { href: "/admin/slides",      label: "Hero Slides",  icon: ImageIcon,       group: "Content" },
   { href: "/admin/staff",       label: "Staff",        icon: UserCheck,       group: "Content" },
