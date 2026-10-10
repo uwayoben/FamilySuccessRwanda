@@ -8,7 +8,7 @@ export async function PATCH(
   const { id } = await params;
   const body = await request.json();
 
-  if ("is_active" in body) {
+  if ("is_active" in body && Object.keys(body).length === 1) {
     await pool.execute("UPDATE staff SET is_active = ? WHERE id = ?", [body.is_active ? 1 : 0, id]);
     return NextResponse.json({ success: true });
   }

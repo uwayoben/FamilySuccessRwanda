@@ -8,23 +8,23 @@ export async function PATCH(
   const { id } = await params;
   const body = await request.json();
 
-  if ("is_active" in body) {
+  if ("is_active" in body && Object.keys(body).length === 1) {
     await pool.execute("UPDATE hero_slides SET is_active = ? WHERE id = ?", [body.is_active ? 1 : 0, id]);
     return NextResponse.json({ success: true });
   }
 
   const { tag, title, highlight, subtitle, cta1_label, cta1_href, cta2_label, cta2_href,
-    image_url, overlay, stat_value, stat_label, bullets, icon_name, display_order } = body;
+    image_url, overlay, stat_value, stat_label, bullets, icon_name, display_order, is_active } = body;
 
   await pool.execute(
     `UPDATE hero_slides SET
        tag=?, title=?, highlight=?, subtitle=?, cta1_label=?, cta1_href=?,
        cta2_label=?, cta2_href=?, image_url=?, overlay=?, stat_value=?,
-       stat_label=?, bullets=?, icon_name=?, display_order=?
+       stat_label=?, bullets=?, icon_name=?, display_order=?, is_active=?
      WHERE id=?`,
     [tag, title, highlight, subtitle, cta1_label, cta1_href, cta2_label, cta2_href,
      image_url, overlay, stat_value, stat_label,
-     JSON.stringify(bullets ?? []), icon_name, display_order, id]
+     JSON.stringify(bullets ?? []), icon_name, display_order, (is_active ?? 1) ? 1 : 0, id]
   );
   return NextResponse.json({ success: true });
 }
