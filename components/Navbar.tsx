@@ -12,7 +12,6 @@ const aboutDropdown = [
 ];
 
 const navLinks = [
-  { href: "/", label: "Home", dropdown: null },
   { href: "/about", label: "About", dropdown: aboutDropdown },
   { href: "/programs", label: "Programs", dropdown: null },
   { href: "/faina-jerusalem", label: "Faina Jerusalem", dropdown: null },

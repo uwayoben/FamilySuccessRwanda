@@ -1,6 +1,9 @@
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 
+// Render public pages on every request so admin changes show up without a rebuild.
+export const dynamic = "force-dynamic";
+
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   return (
     <>
