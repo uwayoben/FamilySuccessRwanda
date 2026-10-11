@@ -153,6 +153,47 @@ const TABLE_MIGRATIONS: Migration[] = [
     ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
   },
   {
+    name: "create_news",
+    sql: `CREATE TABLE IF NOT EXISTS news (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      title VARCHAR(250) NOT NULL,
+      slug VARCHAR(250) NOT NULL UNIQUE,
+      excerpt TEXT,
+      content MEDIUMTEXT,
+      image_url VARCHAR(500),
+      published_at DATE NOT NULL,
+      is_active TINYINT(1) DEFAULT 1,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+  },
+  {
+    name: "create_publications",
+    sql: `CREATE TABLE IF NOT EXISTS publications (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      title VARCHAR(250) NOT NULL,
+      description TEXT,
+      file_url VARCHAR(500) NOT NULL,
+      cover_url VARCHAR(500),
+      published_at DATE NOT NULL,
+      is_active TINYINT(1) DEFAULT 1,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+  },
+  {
+    name: "create_success_stories",
+    sql: `CREATE TABLE IF NOT EXISTS success_stories (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      name VARCHAR(200) NOT NULL,
+      subtitle VARCHAR(250),
+      quote TEXT,
+      story MEDIUMTEXT,
+      image_url VARCHAR(500),
+      display_order INT DEFAULT 99,
+      is_active TINYINT(1) DEFAULT 1,
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+  },
+  {
     name: "create_faith_statements",
     sql: `CREATE TABLE IF NOT EXISTS faith_statements (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -376,6 +417,45 @@ const SEED_MIGRATIONS: Migration[] = [
           `INSERT IGNORE INTO staff (slug,name,role,department,photo,short_bio,full_bio,email,phone,joined_year,education,expertise,display_order)
            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)`,
           [s.slug, s.name, s.role, s.department, s.photo, s.short_bio, s.full_bio, s.email, s.phone, s.joined_year, JSON.stringify(s.education), JSON.stringify(s.expertise), s.display_order]
+        );
+      }
+    },
+  },
+  {
+    // Sample articles so the news section is not empty — edit or delete them in Admin → News.
+    name: "seed_news",
+    fn: async (conn) => {
+      const news = [
+        {
+          title: "320 Students Sponsored at Faina Jerusalem Village",
+          slug: "320-students-sponsored-at-faina-jerusalem-village",
+          excerpt: "In 2024, 320 students were enrolled at Faina Jerusalem Village, all fully sponsored for their course and feeding fees.",
+          content: "Faina Jerusalem Village continues to open doors for disadvantaged, marginalized, and vulnerable youth. In 2024, 320 students were enrolled, and every one of them was fully sponsored for their course and feeding fees.\n\nStudents follow the Government of Rwanda's official training curriculum, with one-year TVET short courses in welding, masonry, carpentry, tailoring, and hairdressing, alongside quality primary education for school dropouts and vulnerable children.\n\nEach TVET course combines eight months of classes with four months of internship, followed by entrepreneurship guidance and job placement support.\n\nWe thank every sponsor and partner who makes this possible.",
+          image_url: "https://images.unsplash.com/photo-1548102245-c79dbcfa9f92?w=1200&q=80",
+          days_ago: 3,
+        },
+        {
+          title: "Sponsor a Child: A New Way to Change a Life",
+          slug: "sponsor-a-child-a-new-way-to-change-a-life",
+          excerpt: "You can now sponsor a child who lost parental care from RWF 20,000 per month for food and basic needs.",
+          content: "Every child deserves love, security, and the chance to dream. Family Success Rwanda has opened a child sponsorship program for children who lost parental care and other vulnerable children in Rwanda.\n\nSponsorship helps provide food, clothes, shoes, bedding, scholastic materials, and school uniforms. RWF 20,000 per month provides food and basic needs for a child.\n\nVisit the Sponsor a Child page to learn more and to find our bank details.",
+          image_url: "https://images.unsplash.com/photo-1543689604-6fe8dbcd1f59?w=1200&q=80",
+          days_ago: 10,
+        },
+        {
+          title: "Volunteers Welcome at Family Success Rwanda",
+          slug: "volunteers-welcome-at-family-success-rwanda",
+          excerpt: "Give your time and skills to support children, women, and families in Nyaruguru District.",
+          content: "Family Success Rwanda welcomes volunteers who want to give their time and skills to serve vulnerable children, women, and families in Nyaruguru District.\n\nVolunteers can support education, Faina Jerusalem Village, healthcare outreach, women and community empowerment, and more.\n\nTo apply, open Get Involved and choose Volunteers, then fill in the application form. Our team will get in touch with you.",
+          image_url: "",
+          days_ago: 21,
+        },
+      ];
+      for (const n of news) {
+        await conn.query(
+          `INSERT IGNORE INTO news (title, slug, excerpt, content, image_url, published_at)
+           VALUES (?,?,?,?,?, DATE_SUB(CURDATE(), INTERVAL ? DAY))`,
+          [n.title, n.slug, n.excerpt, n.content, n.image_url, n.days_ago]
         );
       }
     },

@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
 import pool from "@/lib/db";
+import { SPONSOR_CHILD_SETTING_KEY } from "@/lib/sponsorChild";
 
-const ALLOWED_KEYS = ["who_we_are_image"];
+const ALLOWED_KEYS = ["who_we_are_image", "faina_home_image", SPONSOR_CHILD_SETTING_KEY];
 
 export async function GET() {
   const [rows] = await pool.execute(

@@ -1,14 +1,16 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Heart, ArrowRight, BookOpen, Wrench, GraduationCap, Star,
+  Heart, ArrowRight, Wrench, GraduationCap, Star, Quote,
   Globe, Users, TrendingUp, Baby, Activity, Home,
   Sparkles, HeartHandshake, Scale, Handshake, Leaf, Target, Eye,
   type LucideIcon,
 } from "lucide-react";
 import HeroSlider from "@/components/HeroSlider";
 import PartnersSlider from "@/components/PartnersSlider";
-import { getHeroSlides, getPartners, getCoreValues, getPrograms, getSetting } from "@/lib/queries";
+import NewsCard from "@/components/NewsCard";
+import CountUp from "@/components/CountUp";
+import { getHeroSlides, getPartners, getCoreValues, getPrograms, getSetting, getNews, getSuccessStories } from "@/lib/queries";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   "graduation-cap": GraduationCap, users: Users, "trending-up": TrendingUp,
@@ -19,14 +21,26 @@ const ICON_MAP: Record<string, LucideIcon> = {
 
 // Stock fallback shown until an image is uploaded in Admin → Home Page.
 const DEFAULT_WHO_WE_ARE_IMAGE = "https://images.unsplash.com/photo-1598605170898-853b9ae903fc?w=1200&q=80";
+const DEFAULT_FAINA_IMAGE = "https://images.unsplash.com/photo-1548102245-c79dbcfa9f92?w=1200&q=80";
+
+// Same figures as the Our Impact page.
+const IMPACT_NUMBERS = [
+  { end: 320, suffix: "+", label: "Students Sponsored", sub: "In 2024 at Faina Jerusalem", icon: GraduationCap },
+  { end: 6, suffix: "", label: "Active Programs", sub: "Covering every life stage", icon: Star },
+  { end: 5, suffix: "", label: "TVET Courses", sub: "Vocational training", icon: Wrench },
+  { end: 2, suffix: "", label: "Districts Reached", sub: "Nyaruguru & Nyamagabe", icon: Globe },
+];
 
 export default async function HomePage() {
-  const [slides, partners, coreValues, programs, whoWeAreImage] = await Promise.all([
+  const [slides, partners, coreValues, programs, whoWeAreImage, fainaImage, news, stories] = await Promise.all([
     getHeroSlides(),
     getPartners(),
     getCoreValues(),
     getPrograms(),
     getSetting("who_we_are_image"),
+    getSetting("faina_home_image"),
+    getNews(3),
+    getSuccessStories(3),
   ]);
 
   return (
@@ -65,11 +79,45 @@ export default async function HomePage() {
                 <Link href="/about" className="inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-6 py-3 rounded-full transition-colors">
                   Learn Our Story <ArrowRight className="w-4 h-4" />
                 </Link>
-                <a href="tel:+250788316227" className="inline-flex items-center justify-center gap-2 border-2 border-emerald-700 text-emerald-700 hover:bg-emerald-50 font-semibold px-6 py-3 rounded-full transition-colors">
-                  +250 788 316 227
-                </a>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Impact in Numbers */}
+      <section className="section-padding bg-gradient-to-br from-emerald-800 to-emerald-950 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-orange-400 rounded-full" style={{filter:"blur(80px)"}} />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-14">
+            <span className="text-orange-400 font-semibold text-sm uppercase tracking-wider">By The Numbers</span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-white mt-3 mb-4">
+              Our Impact in <span className="text-orange-400">Numbers</span>
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-5">
+            {IMPACT_NUMBERS.map((stat) => (
+              <div key={stat.label} className="bg-white/10 border border-white/20 rounded-2xl p-6 text-center">
+                <div className="w-12 h-12 bg-orange-500 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <stat.icon className="w-6 h-6 text-white" />
+                </div>
+                <p className="text-4xl sm:text-5xl font-extrabold text-white tabular-nums">
+                  <CountUp end={stat.end} suffix={stat.suffix} />
+                </p>
+                <p className="text-white font-semibold mt-2">{stat.label}</p>
+                <p className="text-emerald-200 text-xs mt-1">{stat.sub}</p>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <Link
+              href="/impact"
+              className="inline-flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/30 text-white font-semibold px-8 py-3 rounded-full transition-colors"
+            >
+              See Our Impact <ArrowRight className="w-5 h-5" />
+            </Link>
           </div>
         </div>
       </section>
@@ -172,22 +220,17 @@ export default async function HomePage() {
                 Explore the Village <ArrowRight className="w-5 h-5" />
               </Link>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              {[
-                { icon: BookOpen,     value: "320",   label: "Students in 2024", sub: "All fully sponsored" },
-                { icon: Wrench,       value: "5",     label: "TVET Courses",     sub: "Practical skills" },
-                { icon: GraduationCap,value: "2023",  label: "Founded",          sub: "By FS Rwanda" },
-                { icon: Star,         value: "Gov't", label: "Accredited",       sub: "Rwanda curriculum" },
-              ].map(item => (
-                <div key={item.label} className="bg-white/10 backdrop-blur-sm border border-white/10 rounded-2xl p-5 text-center">
-                  <div className="w-10 h-10 bg-orange-500/20 rounded-xl flex items-center justify-center mx-auto mb-3">
-                    <item.icon className="w-5 h-5 text-orange-400" />
-                  </div>
-                  <p className="text-2xl font-extrabold text-white">{item.value}</p>
-                  <p className="text-emerald-200 text-sm font-medium">{item.label}</p>
-                  <p className="text-emerald-400 text-xs mt-1">{item.sub}</p>
-                </div>
-              ))}
+            <div className="relative">
+              <div className="absolute -bottom-4 -right-4 w-full h-full bg-orange-500/20 rounded-3xl" />
+              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border border-white/10">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={fainaImage ?? DEFAULT_FAINA_IMAGE}
+                  alt="Students at Faina Jerusalem Village"
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -215,6 +258,84 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Success Stories — hidden until a story is added in Admin → Success Stories */}
+      {stories.length > 0 && (
+        <section className="section-padding bg-white">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-14">
+              <span className="text-orange-600 font-semibold text-sm uppercase tracking-wider">Lives Transformed</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mt-3 mb-4">
+                Success <span className="text-emerald-700">Stories</span>
+              </h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {stories.map((story) => (
+                <Link
+                  key={story.id}
+                  href={`/success-stories#story-${story.id}`}
+                  className="group flex flex-col bg-emerald-50 rounded-2xl overflow-hidden border border-emerald-100 card-hover"
+                >
+                  {story.image_url && (
+                    <div className="aspect-[16/10] overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={story.image_url} alt={story.name} loading="lazy" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                  <div className="flex flex-col flex-1 p-6">
+                    <Quote className="w-8 h-8 text-orange-400 mb-3" />
+                    <p className="text-gray-700 leading-relaxed italic line-clamp-4 mb-5">
+                      {story.quote?.trim() || story.story}
+                    </p>
+                    <div className="mt-auto">
+                      <p className="font-bold text-gray-900">{story.name}</p>
+                      {story.subtitle?.trim() && <p className="text-sm text-emerald-700">{story.subtitle}</p>}
+                      <span className="inline-flex items-center gap-1.5 text-sm font-semibold text-orange-600 mt-3">
+                        Read the story <ArrowRight className="w-4 h-4" />
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div className="text-center mt-10">
+              <Link
+                href="/success-stories"
+                className="inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-8 py-3 rounded-full transition-colors"
+              >
+                All Success Stories <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Latest News — hidden until an article is published in Admin → News */}
+      {news.length > 0 && (
+        <section className="section-padding bg-gray-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="text-center mb-14">
+              <span className="text-orange-600 font-semibold text-sm uppercase tracking-wider">News & Updates</span>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-gray-900 mt-3 mb-4">
+                Latest <span className="text-emerald-700">News</span>
+              </h2>
+            </div>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {news.map((item) => (
+                <NewsCard key={item.id} item={item} />
+              ))}
+            </div>
+            <div className="text-center mt-10">
+              <Link
+                href="/news"
+                className="inline-flex items-center justify-center gap-2 bg-emerald-700 hover:bg-emerald-800 text-white font-semibold px-8 py-3 rounded-full transition-colors"
+              >
+                View All News <ArrowRight className="w-5 h-5" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <PartnersSlider partners={partners} />
 

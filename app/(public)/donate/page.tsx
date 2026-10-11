@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Heart, GraduationCap, Users, Activity, Baby, TrendingUp, Home, CheckCircle, AlertCircle } from "lucide-react";
+import BankDetails from "@/components/BankDetails";
 
 const donationTypes = [
   { value: "general", label: "General Donation", icon: Heart, desc: "Where need is greatest" },
@@ -98,11 +99,13 @@ export default function DonatePage() {
           </p>
         </div>
         <div className="absolute bottom-0 left-0 right-0">
-          <svg viewBox="0 0 1440 60" className="w-full fill-white" preserveAspectRatio="none">
+          <svg viewBox="0 0 1440 60" className="w-full fill-gray-50" preserveAspectRatio="none">
             <path d="M0,30 C480,60 960,0 1440,30 L1440,60 L0,60 Z" />
           </svg>
         </div>
       </section>
+
+      <BankDetails />
 
       {/* Main Content */}
       <section className="section-padding bg-white">

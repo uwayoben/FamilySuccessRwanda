@@ -166,6 +166,99 @@ export async function getGallery(): Promise<GalleryItem[]> {
   return rows as GalleryItem[];
 }
 
+export type NewsItem = {
+  id: number;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  image_url: string;
+  published_at: string; // YYYY-MM-DD
+  is_active: number;
+};
+
+// DATE columns come back as JS Dates; format in SQL to avoid timezone shifts.
+export const NEWS_COLUMNS =
+  "id, title, slug, excerpt, content, image_url, DATE_FORMAT(published_at, '%Y-%m-%d') AS published_at, is_active";
+
+export async function getNews(limit?: number): Promise<NewsItem[]> {
+  try {
+    const limitSql = limit ? ` LIMIT ${Math.max(1, Math.floor(limit))}` : "";
+    const [rows] = await pool.execute(
+      `SELECT ${NEWS_COLUMNS} FROM news
+       WHERE is_active = 1 AND published_at <= CURDATE()
+       ORDER BY published_at DESC, id DESC${limitSql}`
+    ) as any[];
+    return rows as NewsItem[];
+  } catch {
+    // Table may not exist yet if migrations haven't run — show no news.
+    return [];
+  }
+}
+
+export async function getNewsBySlug(slug: string): Promise<NewsItem | null> {
+  try {
+    const [rows] = await pool.execute(
+      `SELECT ${NEWS_COLUMNS} FROM news
+       WHERE slug = ? AND is_active = 1 AND published_at <= CURDATE() LIMIT 1`,
+      [slug]
+    ) as any[];
+    return (rows as NewsItem[])[0] ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export type Publication = {
+  id: number;
+  title: string;
+  description: string;
+  file_url: string;
+  cover_url: string;
+  published_at: string; // YYYY-MM-DD
+  is_active: number;
+};
+
+export const PUBLICATION_COLUMNS =
+  "id, title, description, file_url, cover_url, DATE_FORMAT(published_at, '%Y-%m-%d') AS published_at, is_active";
+
+export async function getPublications(): Promise<Publication[]> {
+  try {
+    const [rows] = await pool.execute(
+      `SELECT ${PUBLICATION_COLUMNS} FROM publications
+       WHERE is_active = 1 ORDER BY published_at DESC, id DESC`
+    ) as any[];
+    return rows as Publication[];
+  } catch {
+    // Table may not exist yet if migrations haven't run — show no publications.
+    return [];
+  }
+}
+
+export type SuccessStory = {
+  id: number;
+  name: string;
+  subtitle: string;
+  quote: string;
+  story: string;
+  image_url: string;
+  display_order: number;
+  is_active: number;
+};
+
+export async function getSuccessStories(limit?: number): Promise<SuccessStory[]> {
+  try {
+    const limitSql = limit ? ` LIMIT ${Math.max(1, Math.floor(limit))}` : "";
+    const [rows] = await pool.execute(
+      `SELECT * FROM success_stories WHERE is_active = 1 ORDER BY display_order ASC, id DESC${limitSql}`
+    ) as any[];
+    return rows as SuccessStory[];
+  } catch {
+    // Table may not exist yet if migrations haven't run — show no stories.
+    return [];
+  }
+}
+
 export async function getSetting(key: string): Promise<string | null> {
   try {
     const [rows] = await pool.execute(

@@ -16,6 +16,7 @@ const CONTENT_TYPES: Record<string, string> = {
   avif: "image/avif",
   bmp: "image/bmp",
   ico: "image/x-icon",
+  pdf: "application/pdf",
 };
 
 // `next start` only serves the public files that existed when the server booted,

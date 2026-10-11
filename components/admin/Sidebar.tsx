@@ -20,6 +20,10 @@ import {
   Handshake,
   GalleryHorizontal,
   Home,
+  HeartHandshake,
+  Newspaper,
+  FileText,
+  Quote,
 } from "lucide-react";
 
 const navItems = [
@@ -28,6 +32,10 @@ const navItems = [
   { href: "/admin/messages",    label: "Messages",     icon: MessageSquare,   group: "Activity" },
   { href: "/admin/subscribers", label: "Subscribers",  icon: Users,           group: "Activity" },
   { href: "/admin/homepage",    label: "Home Page",    icon: Home,            group: "Content" },
+  { href: "/admin/sponsor-a-child", label: "Sponsor a Child", icon: HeartHandshake, group: "Content" },
+  { href: "/admin/news",        label: "News",         icon: Newspaper,       group: "Content" },
+  { href: "/admin/publications", label: "Publications", icon: FileText,       group: "Content" },
+  { href: "/admin/stories",     label: "Success Stories", icon: Quote,        group: "Content" },
   { href: "/admin/programs",    label: "Programs",     icon: GraduationCap,   group: "Content" },
   { href: "/admin/slides",      label: "Hero Slides",  icon: ImageIcon,       group: "Content" },
   { href: "/admin/staff",       label: "Staff",        icon: UserCheck,       group: "Content" },
