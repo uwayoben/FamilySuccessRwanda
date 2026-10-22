@@ -5,7 +5,7 @@ import { getVisitorStats } from "@/lib/visits";
 import {
   DollarSign, MessageSquare, Users, HandHeart, ArrowRight, ArrowUpRight, XCircle,
   Clock, Mail, Newspaper, Quote, FileText, GalleryHorizontal, GraduationCap,
-  UserCheck, Handshake, ImageIcon, CheckCircle2, type LucideIcon,
+  UserCheck, Handshake, ImageIcon, CheckCircle2, Briefcase, type LucideIcon,
 } from "lucide-react";
 
 // Tables added later may not exist until migrations have run — count them as empty.
@@ -34,7 +34,9 @@ async function getStats() {
       `SELECT COUNT(*) as count,
               COALESCE(SUM(status = 'unread'), 0) as unread,
               COALESCE(SUM(subject LIKE 'Volunteer application%'), 0) as volunteers,
-              COALESCE(SUM(subject LIKE 'Volunteer application%' AND status = 'unread'), 0) as volunteersUnread
+              COALESCE(SUM(subject LIKE 'Volunteer application%' AND status = 'unread'), 0) as volunteersUnread,
+              COALESCE(SUM(subject LIKE 'Internship application%'), 0) as interns,
+              COALESCE(SUM(subject LIKE 'Internship application%' AND status = 'unread'), 0) as internsUnread
        FROM contact_messages`
     );
     const [[subscribers]]: any = await pool.execute(
@@ -95,6 +97,8 @@ async function getStats() {
       unreadMessages: Number(messages.unread),
       volunteers: Number(messages.volunteers),
       volunteersUnread: Number(messages.volunteersUnread),
+      interns: Number(messages.interns),
+      internsUnread: Number(messages.internsUnread),
       totalSubscribers: Number(subscribers.count),
       recentSubscribers: Number(subscribers.recent),
       recentDonations,
@@ -231,6 +235,7 @@ export default async function DashboardPage() {
     { label: "Pending donation requests", count: stats.status.pending, hint: "Waiting for payment follow-up", href: "/admin/donations", icon: Clock },
     { label: "Unread messages", count: stats.unreadMessages, hint: "Contact form and applications", href: "/admin/messages", icon: Mail },
     { label: "New volunteer applications", count: stats.volunteersUnread, hint: `${stats.volunteers} received in total`, href: "/admin/messages", icon: HandHeart },
+    { label: "New internship applications", count: stats.internsUnread, hint: `${stats.interns} received in total`, href: "/admin/messages", icon: Briefcase },
   ];
 
   const kpis: { label: string; value: string; sub: string; icon: LucideIcon; tint: string }[] = [
@@ -281,7 +286,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Needs attention */}
-      <div className="grid sm:grid-cols-3 gap-4">
+      <div className="grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {attention.map((item) => {
           const active = item.count > 0;
           return (

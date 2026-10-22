@@ -1,12 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Save, Loader2, Upload, CheckCircle, Plus, Trash2, ExternalLink } from "lucide-react";
+import { Save, Loader2, Upload, CheckCircle, Plus, Trash2, ExternalLink, Pencil, ChevronUp } from "lucide-react";
+import RichTextEditor from "@/components/admin/RichTextEditor";
+import { toRichHtml } from "@/lib/richText";
 import {
   SPONSOR_CHILD_SETTING_KEY,
   DEFAULT_SPONSOR_CHILD_CONTENT,
+  EMPTY_CHILD,
   parseSponsorChildContent,
+  withUniqueSlugs,
   type SponsorChildContent,
+  type SponsorChildProfile,
 } from "@/lib/sponsorChild";
 
 const inputCls = "w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm text-slate-800 focus:outline-none focus:border-orange-400 transition-colors";
@@ -83,13 +88,18 @@ export default function SponsorAChildAdmin() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [content, setContent] = useState<SponsorChildContent>(DEFAULT_SPONSOR_CHILD_CONTENT);
+  const [openChild, setOpenChild] = useState<number | null>(null);
+  // Page addresses that exist on the live site, for the "View page" links.
+  const [savedSlugs, setSavedSlugs] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     (async () => {
       try {
         const res = await fetch("/api/admin/settings");
         const data = await res.json();
-        setContent(parseSponsorChildContent(data[SPONSOR_CHILD_SETTING_KEY]));
+        const loaded = parseSponsorChildContent(data[SPONSOR_CHILD_SETTING_KEY]);
+        setContent(loaded);
+        setSavedSlugs(new Set(loaded.children.map((c) => c.slug)));
       } finally {
         setLoading(false);
       }
@@ -110,7 +120,11 @@ export default function SponsorAChildAdmin() {
         actions: content.actions.map((a) => a.trim()).filter(Boolean),
         costs: content.costs.filter((c) => c.amount.trim() || c.desc.trim()),
         photos: content.photos.filter((p) => p.url),
-        children: content.children.filter((c) => c.name.trim()),
+        children: withUniqueSlugs(content.children.filter((c) => c.name.trim())).map((c) => ({
+          ...c,
+          name: c.name.trim(),
+          story: toRichHtml(c.story),
+        })),
       };
       const res = await fetch("/api/admin/settings", {
         method: "PUT",
@@ -119,6 +133,8 @@ export default function SponsorAChildAdmin() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       setContent(cleaned);
+      setSavedSlugs(new Set(cleaned.children.map((c) => c.slug)));
+      setOpenChild(null);
       setSaved(true);
     } catch (err) {
       alert("Save failed: " + (err instanceof Error ? err.message : "Network error"));
@@ -271,61 +287,136 @@ export default function SponsorAChildAdmin() {
             </button>
           </Card>
 
-          <Card title="Children Waiting for a Sponsor" hint="Sponsors can browse these children and choose one to sponsor. Tick “Sponsored” once a child has a sponsor — they stay listed but can no longer be chosen. Children without a name are not saved.">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {content.children.map((child, i) => {
-                const update = (patch: Partial<typeof child>) =>
-                  set("children", content.children.map((c, j) => (j === i ? { ...c, ...patch } : c)));
-                return (
-                  <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
-                    <ImageField value={child.photo} onChange={(photo) => update({ photo })} emptyText="Upload a photo of the child" />
-                    <div className="grid grid-cols-3 gap-2">
-                      <input
-                        className={`${inputCls} col-span-2`}
-                        placeholder="Name"
-                        value={child.name}
-                        onChange={(e) => update({ name: e.target.value })}
-                      />
-                      <input
-                        className={inputCls}
-                        placeholder="Age"
-                        value={child.age}
-                        onChange={(e) => update({ age: e.target.value })}
-                      />
-                    </div>
-                    <textarea
-                      rows={3}
-                      className={`${inputCls} resize-none`}
-                      placeholder="Short story (school level, dreams, needs…)"
-                      value={child.story}
-                      onChange={(e) => update({ story: e.target.value })}
-                    />
-                    <div className="flex items-center justify-between">
-                      <label className="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
-                        <input
-                          type="checkbox"
-                          className="w-4 h-4 accent-emerald-600"
-                          checked={child.sponsored}
-                          onChange={(e) => update({ sponsored: e.target.checked })}
-                        />
-                        Sponsored
-                      </label>
-                      <button
-                        type="button"
-                        onClick={() => set("children", content.children.filter((_, j) => j !== i))}
-                        className="inline-flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 transition-colors"
+          <Card title="Children Waiting for a Sponsor" hint="Sponsors browse these children, open a child's page to read their story, and choose one to sponsor. Tick “Sponsored” once a child has a sponsor — they stay listed but can no longer be chosen.">
+            {content.children.length === 0 && (
+              <p className="text-slate-400 text-sm text-center py-6 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                No children added yet.
+              </p>
+            )}
+            {content.children.map((child, i) => {
+              const update = (patch: Partial<SponsorChildProfile>) =>
+                set("children", content.children.map((c, j) => (j === i ? { ...c, ...patch } : c)));
+              const open = openChild === i;
+              const savedSlug = savedSlugs.has(child.slug) ? child.slug : "";
+              return (
+                <div key={i} className={`rounded-xl border transition-colors ${open ? "border-orange-300 bg-orange-50/30" : "border-slate-200 bg-slate-50"}`}>
+                  {/* Summary row */}
+                  <div className="flex items-center gap-3 p-3">
+                    <button type="button" onClick={() => setOpenChild(open ? null : i)} className="flex items-center gap-3 flex-1 min-w-0 text-left">
+                      <div className="w-14 h-14 rounded-xl overflow-hidden bg-slate-200 flex-shrink-0">
+                        {child.photo ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={child.photo} alt="" className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold text-lg">
+                            {child.name.charAt(0) || "?"}
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-800 truncate">{child.name || "New child"}</p>
+                        <p className="text-xs text-slate-500 truncate">
+                          {[child.age && `${child.age} years`, child.school].filter(Boolean).join(" · ") || "Click to add details"}
+                        </p>
+                      </div>
+                    </button>
+                    <span className={`hidden sm:inline-flex text-xs font-semibold px-2.5 py-1 rounded-full ${child.sponsored ? "bg-emerald-100 text-emerald-700" : "bg-orange-100 text-orange-700"}`}>
+                      {child.sponsored ? "Sponsored" : "Waiting"}
+                    </span>
+                    {savedSlug && (
+                      <a
+                        href={`/sponsor-a-child/${savedSlug}`}
+                        target="_blank"
+                        title="View page"
+                        className="p-2 text-slate-400 hover:text-orange-600 hover:bg-white rounded-lg transition-colors"
                       >
-                        <Trash2 className="w-3.5 h-3.5" /> Delete
-                      </button>
-                    </div>
+                        <ExternalLink className="w-4 h-4" />
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => setOpenChild(open ? null : i)}
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-slate-600 hover:text-orange-600 px-3 py-2 rounded-lg hover:bg-white transition-colors"
+                    >
+                      {open ? <ChevronUp className="w-4 h-4" /> : <Pencil className="w-4 h-4" />}
+                      <span className="hidden sm:inline">{open ? "Close" : "Edit"}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!confirm(`Delete ${child.name || "this child"}?`)) return;
+                        set("children", content.children.filter((_, j) => j !== i));
+                        setOpenChild(null);
+                      }}
+                      className="p-2 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      aria-label="Delete child"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
-                );
-              })}
-            </div>
+
+                  {/* Full form */}
+                  {open && (
+                    <div className="border-t border-orange-200/70 p-5 space-y-5">
+                      <div className="grid md:grid-cols-[240px_1fr] gap-6">
+                        <div>
+                          <label className={labelCls}>Photo</label>
+                          <ImageField value={child.photo} onChange={(photo) => update({ photo })} emptyText="Upload a photo of the child" />
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-4 content-start">
+                          <div className="sm:col-span-2">
+                            <label className={labelCls}>Name <span className="text-red-500">*</span></label>
+                            <input className={inputCls} placeholder="e.g. Aline" value={child.name} onChange={(e) => update({ name: e.target.value })} />
+                          </div>
+                          <div>
+                            <label className={labelCls}>Age</label>
+                            <input className={inputCls} placeholder="e.g. 8" value={child.age} onChange={(e) => update({ age: e.target.value })} />
+                          </div>
+                          <div>
+                            <label className={labelCls}>School / class</label>
+                            <input className={inputCls} placeholder="e.g. Primary 3" value={child.school} onChange={(e) => update({ school: e.target.value })} />
+                          </div>
+                          <div className="sm:col-span-2">
+                            <label className={labelCls}>Dream — wants to become</label>
+                            <input className={inputCls} placeholder="e.g. Teacher" value={child.dream} onChange={(e) => update({ dream: e.target.value })} />
+                          </div>
+                          <label className="sm:col-span-2 flex items-start gap-3 bg-white border border-slate-200 rounded-xl p-3 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              className="w-4 h-4 mt-0.5 accent-emerald-600"
+                              checked={child.sponsored}
+                              onChange={(e) => update({ sponsored: e.target.checked })}
+                            />
+                            <span>
+                              <span className="block text-sm font-bold text-slate-700">This child already has a sponsor</span>
+                              <span className="block text-xs text-slate-500">They stay on the website with a “Sponsored” badge, without a Sponsor button.</span>
+                            </span>
+                          </label>
+                        </div>
+                      </div>
+                      <div>
+                        <label className={labelCls}>Story</label>
+                        <RichTextEditor
+                          value={child.story}
+                          onChange={(story) => update({ story })}
+                          placeholder="Tell sponsors about this child: their family situation, school, hobbies, dreams and needs…"
+                        />
+                        <p className="text-slate-400 text-xs mt-1.5">
+                          Select text and use the toolbar for bold, italic, headings, lists and links. The first lines are shown on the child&apos;s card; the full story on their page.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             <button
               type="button"
-              onClick={() => set("children", [...content.children, { name: "", age: "", photo: "", story: "", sponsored: false }])}
-              className="inline-flex items-center gap-2 text-sm font-medium text-orange-600 hover:text-orange-700"
+              onClick={() => {
+                set("children", [...content.children, { ...EMPTY_CHILD }]);
+                setOpenChild(content.children.length);
+              }}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-emerald-600 hover:bg-emerald-700 px-4 py-2.5 rounded-xl transition-colors"
             >
               <Plus className="w-4 h-4" /> Add child
             </button>

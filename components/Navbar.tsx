@@ -20,6 +20,7 @@ const newsDropdown = [
 
 const getInvolvedDropdown = [
   { href: "/get-involved/volunteers", label: "Volunteers", desc: "Give your time & skills" },
+  { href: "/get-involved/internships", label: "Internships", desc: "Gain experience with us" },
   { href: "/get-involved/donors", label: "Donors", desc: "Support our work" },
 ];
 

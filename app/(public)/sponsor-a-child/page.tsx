@@ -176,7 +176,7 @@ export default async function SponsorAChildPage() {
       </section>
 
       {/* Children waiting for a sponsor */}
-      {childrenSection.items.length > 0 && <SponsorChildren {...childrenSection} />}
+      {childrenSection.items.length > 0 && <SponsorChildren items={childrenSection.items} />}
 
       {/* Journey + Photos */}
       {(content.journey_text.trim() || photos.length > 0) && (

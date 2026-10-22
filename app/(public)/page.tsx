@@ -203,7 +203,7 @@ export default async function HomePage() {
       </section>
 
       {/* Choose a Child — managed in Admin → Sponsor a Child */}
-      {childrenSection.items.length > 0 && <SponsorChildren {...childrenSection} limit={4} />}
+      {childrenSection.items.length > 0 && <SponsorChildren items={childrenSection.items} limit={4} />}
 
       {/* Faina Jerusalem Feature */}
       <section className="section-padding bg-gradient-to-br from-emerald-900 to-emerald-950 relative overflow-hidden">
