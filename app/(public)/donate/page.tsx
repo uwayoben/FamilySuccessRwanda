@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { use, useState } from "react";
 import { Heart, GraduationCap, Users, Activity, Baby, TrendingUp, Home, CheckCircle, AlertCircle } from "lucide-react";
 import BankDetails from "@/components/BankDetails";
 
@@ -17,7 +17,16 @@ const donationTypes = [
 
 const amounts = [10, 25, 50, 100, 250, 500];
 
-export default function DonatePage() {
+export default function DonatePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  // Links like /donate?type=children&child=Alice (from Sponsor a Child) prefill the form.
+  const params = use(searchParams);
+  const typeParam = typeof params.type === "string" ? params.type : "";
+  const child = typeof params.child === "string" ? params.child.trim().slice(0, 100) : "";
+
   const [form, setForm] = useState({
     full_name: "",
     email: "",
@@ -25,8 +34,8 @@ export default function DonatePage() {
     amount: "",
     customAmount: "",
     currency: "USD",
-    donation_type: "general",
-    message: "",
+    donation_type: child ? "children" : donationTypes.some((t) => t.value === typeParam) ? typeParam : "general",
+    message: child ? `I would like to sponsor ${child}.` : "",
   });
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errorMsg, setErrorMsg] = useState("");
@@ -114,6 +123,14 @@ export default function DonatePage() {
             {/* Form */}
             <div className="lg:col-span-3">
               <h2 className="text-2xl font-extrabold text-gray-900 mb-8">Donation Details</h2>
+              {child && (
+                <div className="flex items-center gap-3 bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
+                  <Baby className="w-5 h-5 text-orange-600 flex-shrink-0" />
+                  <p className="text-orange-800 text-sm">
+                    You are sponsoring <span className="font-bold">{child}</span>. Thank you!
+                  </p>
+                </div>
+              )}
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Donation Type */}
                 <div>

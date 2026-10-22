@@ -110,6 +110,7 @@ export default function SponsorAChildAdmin() {
         actions: content.actions.map((a) => a.trim()).filter(Boolean),
         costs: content.costs.filter((c) => c.amount.trim() || c.desc.trim()),
         photos: content.photos.filter((p) => p.url),
+        children: content.children.filter((c) => c.name.trim()),
       };
       const res = await fetch("/api/admin/settings", {
         method: "PUT",
@@ -267,6 +268,66 @@ export default function SponsorAChildAdmin() {
               className="inline-flex items-center gap-2 text-sm font-medium text-orange-600 hover:text-orange-700"
             >
               <Plus className="w-4 h-4" /> Add price
+            </button>
+          </Card>
+
+          <Card title="Children Waiting for a Sponsor" hint="Sponsors can browse these children and choose one to sponsor. Tick “Sponsored” once a child has a sponsor — they stay listed but can no longer be chosen. Children without a name are not saved.">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {content.children.map((child, i) => {
+                const update = (patch: Partial<typeof child>) =>
+                  set("children", content.children.map((c, j) => (j === i ? { ...c, ...patch } : c)));
+                return (
+                  <div key={i} className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
+                    <ImageField value={child.photo} onChange={(photo) => update({ photo })} emptyText="Upload a photo of the child" />
+                    <div className="grid grid-cols-3 gap-2">
+                      <input
+                        className={`${inputCls} col-span-2`}
+                        placeholder="Name"
+                        value={child.name}
+                        onChange={(e) => update({ name: e.target.value })}
+                      />
+                      <input
+                        className={inputCls}
+                        placeholder="Age"
+                        value={child.age}
+                        onChange={(e) => update({ age: e.target.value })}
+                      />
+                    </div>
+                    <textarea
+                      rows={3}
+                      className={`${inputCls} resize-none`}
+                      placeholder="Short story (school level, dreams, needs…)"
+                      value={child.story}
+                      onChange={(e) => update({ story: e.target.value })}
+                    />
+                    <div className="flex items-center justify-between">
+                      <label className="inline-flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          className="w-4 h-4 accent-emerald-600"
+                          checked={child.sponsored}
+                          onChange={(e) => update({ sponsored: e.target.checked })}
+                        />
+                        Sponsored
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => set("children", content.children.filter((_, j) => j !== i))}
+                        className="inline-flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 transition-colors"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> Delete
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <button
+              type="button"
+              onClick={() => set("children", [...content.children, { name: "", age: "", photo: "", story: "", sponsored: false }])}
+              className="inline-flex items-center gap-2 text-sm font-medium text-orange-600 hover:text-orange-700"
+            >
+              <Plus className="w-4 h-4" /> Add child
             </button>
           </Card>
 

@@ -1,5 +1,7 @@
 import pool from "@/lib/db";
 import Link from "next/link";
+import CountryList from "@/components/admin/CountryList";
+import { getVisitorStats } from "@/lib/visits";
 import {
   DollarSign, MessageSquare, Users, HandHeart, ArrowRight, ArrowUpRight, XCircle,
   Clock, Mail, Newspaper, Quote, FileText, GalleryHorizontal, GraduationCap,
@@ -211,7 +213,7 @@ function MonthlyBars({ months }: { months: { ym: string; label: string; fullLabe
 }
 
 export default async function DashboardPage() {
-  const stats = await getStats();
+  const [stats, visitors] = await Promise.all([getStats(), getVisitorStats(30)]);
 
   if (!stats) {
     return (
@@ -318,6 +320,32 @@ export default async function DashboardPage() {
           </Card>
         ))}
       </div>
+
+      {/* Website visitors */}
+      {visitors && (
+        <Card>
+          <CardHeader title="Website visitors" sub="Last 30 days" href="/admin/visitors" linkLabel="Full report" />
+          <div className="grid lg:grid-cols-2 gap-6 px-6 pb-6">
+            <div className="grid grid-cols-2 gap-3 content-start">
+              {[
+                { label: "Visitors today", value: visitors.today.visitors },
+                { label: "Visitors (30 days)", value: visitors.range.visitors },
+                { label: "Page views (30 days)", value: visitors.range.views },
+                { label: "Countries", value: visitors.range.countries },
+              ].map((item) => (
+                <div key={item.label} className="rounded-xl bg-slate-50 border border-slate-100 p-4">
+                  <p className="text-2xl font-extrabold text-slate-900 tabular-nums">{item.value.toLocaleString("en-US")}</p>
+                  <p className="text-xs font-medium text-slate-500">{item.label}</p>
+                </div>
+              ))}
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-slate-500 mb-3">Top countries</p>
+              <CountryList rows={visitors.countries} limit={5} />
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Donations: trend + breakdown */}
       <div className="grid lg:grid-cols-3 gap-6">

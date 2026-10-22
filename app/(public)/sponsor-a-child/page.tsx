@@ -11,8 +11,9 @@ import {
   Share2,
 } from "lucide-react";
 import BankDetails from "@/components/BankDetails";
+import SponsorChildren from "@/components/SponsorChildren";
 import { getSetting } from "@/lib/queries";
-import { SPONSOR_CHILD_SETTING_KEY, parseSponsorChildContent } from "@/lib/sponsorChild";
+import { SPONSOR_CHILD_SETTING_KEY, parseSponsorChildContent, getChildrenSectionProps } from "@/lib/sponsorChild";
 
 export const metadata = {
   title: "Sponsor a Child | Family Success Rwanda",
@@ -37,6 +38,8 @@ export default async function SponsorAChildPage() {
   const actions = content.actions.map((a) => a.trim()).filter(Boolean);
   const costs = content.costs.filter((c) => c.amount.trim() || c.desc.trim());
   const photos = content.photos.filter((p) => p.url);
+  const childrenSection = getChildrenSectionProps(content);
+  const sponsorHref = childrenSection.items.length > 0 ? "#children" : "/donate?type=children";
 
   return (
     <>
@@ -73,7 +76,7 @@ export default async function SponsorAChildPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mt-8">
             <Link
-              href="/donate"
+              href={sponsorHref}
               className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 text-white font-bold px-8 py-4 rounded-full transition-colors shadow-lg"
             >
               <Heart className="w-5 h-5" /> Sponsor a Child Now
@@ -172,6 +175,9 @@ export default async function SponsorAChildPage() {
         </div>
       </section>
 
+      {/* Children waiting for a sponsor */}
+      {childrenSection.items.length > 0 && <SponsorChildren {...childrenSection} />}
+
       {/* Journey + Photos */}
       {(content.journey_text.trim() || photos.length > 0) && (
         <section className="section-padding bg-white">
@@ -235,7 +241,7 @@ export default async function SponsorAChildPage() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/donate"
+              href={sponsorHref}
               className="inline-flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-400 text-white font-bold px-8 py-4 rounded-full transition-colors shadow-lg"
             >
               <Heart className="w-5 h-5" /> Sponsor a Child Now

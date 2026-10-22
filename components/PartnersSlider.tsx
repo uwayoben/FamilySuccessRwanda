@@ -4,10 +4,13 @@ import { useState, useEffect, useRef } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Partner } from "@/lib/queries";
 
-const CARD_W  = 200;
-const GAP     = 24;
-const STEP    = CARD_W + GAP;
-const VISIBLE = 5;
+// How many cards fit side by side for a given slider width.
+function cardsPerView(width: number) {
+  if (width < 520) return 2;
+  if (width < 800) return 3;
+  if (width < 1040) return 4;
+  return 5;
+}
 
 const CSS = `
   .pc { position: relative; cursor: default; }
@@ -38,12 +41,33 @@ const CSS = `
 `;
 
 export default function PartnersSlider({ partners }: { partners: Partner[] }) {
-  const maxIdx = Math.max(0, partners.length - VISIBLE);
-  const [idx, setIdx] = useState(0);
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const touchStartX = useRef<number | null>(null);
+  const [width, setWidth] = useState(0);
+  const [rawIdx, setIdx] = useState(0);
   const dirRef = useRef(1);
 
+  // Cards are sized from the measured width so a whole number always fits,
+  // on phones as well as desktops.
   useEffect(() => {
-    if (partners.length <= VISIBLE) return;
+    const el = viewportRef.current;
+    if (!el) return;
+    const measure = () => setWidth(el.clientWidth);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const perView = cardsPerView(width || 1200);
+  const gap = width && width < 520 ? 12 : 24;
+  const cardW = width ? (width - gap * (perView - 1)) / perView : 200;
+  const step = cardW + gap;
+  const maxIdx = Math.max(0, partners.length - perView);
+  const idx = Math.min(rawIdx, maxIdx);
+
+  useEffect(() => {
+    if (maxIdx === 0) return;
     const timer = setInterval(() => {
       setIdx(prev => {
         let next = prev + dirRef.current;
@@ -53,10 +77,22 @@ export default function PartnersSlider({ partners }: { partners: Partner[] }) {
       });
     }, 2800);
     return () => clearInterval(timer);
-  }, [maxIdx, partners.length]);
+  }, [maxIdx]);
 
-  const prev = () => { dirRef.current = -1; setIdx(i => Math.max(0, i - 1)); };
+  const prev = () => { dirRef.current = -1; setIdx(i => Math.max(0, Math.min(i, maxIdx) - 1)); };
   const next = () => { dirRef.current =  1; setIdx(i => Math.min(maxIdx, i + 1)); };
+
+  // Swipe left / right on touch screens
+  const onTouchStart = (e: React.TouchEvent) => { touchStartX.current = e.touches[0].clientX; };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const dx = e.changedTouches[0].clientX - touchStartX.current;
+    touchStartX.current = null;
+    if (dx <= -40) next();
+    else if (dx >= 40) prev();
+  };
+
+  const arrowCls = "flex-shrink-0 w-11 h-11 rounded-full border-2 border-gray-200 items-center justify-center text-gray-500 hover:border-orange-400 hover:text-orange-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-white shadow-sm";
 
   if (!partners.length) return null;
 
@@ -73,21 +109,21 @@ export default function PartnersSlider({ partners }: { partners: Partner[] }) {
         </div>
 
         <div className="relative flex items-center gap-4">
-          <button onClick={prev} disabled={idx === 0} aria-label="Previous"
-            className="flex-shrink-0 w-11 h-11 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 hover:border-orange-400 hover:text-orange-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-white shadow-sm">
+          {/* Side arrows from tablet up; phones get them below the cards */}
+          <button onClick={prev} disabled={idx === 0} aria-label="Previous" className={`hidden sm:flex ${arrowCls}`}>
             <ChevronLeft className="w-5 h-5" />
           </button>
 
-          <div className="overflow-hidden flex-1">
-            <div className="flex" style={{ gap: `${GAP}px`, transform: `translateX(-${idx * STEP}px)`, transition: "transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94)" }}>
+          <div ref={viewportRef} className="overflow-hidden flex-1 min-w-0 py-1" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+            <div className="flex" style={{ gap: `${gap}px`, transform: `translateX(-${idx * step}px)`, transition: "transform 0.55s cubic-bezier(0.25, 0.46, 0.45, 0.94)" }}>
               {partners.map(p => (
                 <div
                   key={p.abbr}
                   className="pc flex-shrink-0 rounded-2xl overflow-hidden shadow-md bg-white border border-gray-100"
-                  style={{ width: CARD_W, transition: "box-shadow 0.25s ease, transform 0.25s ease" }}
+                  style={{ width: cardW, transition: "box-shadow 0.25s ease, transform 0.25s ease" }}
                 >
                   {/* Image / fallback */}
-                  <div className="relative bg-white" style={{ height: 130 }}>
+                  <div className="relative bg-white h-24 sm:h-[130px]">
                     {p.logo_url ? (
                       <div className="w-full h-full flex items-center justify-center p-4">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -95,7 +131,7 @@ export default function PartnersSlider({ partners }: { partners: Partner[] }) {
                       </div>
                     ) : (
                       <div className={`w-full h-full bg-gradient-to-br ${p.bg_gradient} flex items-center justify-center`}>
-                        <span className="text-white font-extrabold" style={{ fontSize: p.abbr.length > 4 ? 26 : 38 }}>
+                        <span className={`text-white font-extrabold ${p.abbr.length > 4 ? "text-xl sm:text-[26px]" : "text-3xl sm:text-[38px]"}`}>
                           {p.abbr}
                         </span>
                       </div>
@@ -124,26 +160,33 @@ export default function PartnersSlider({ partners }: { partners: Partner[] }) {
                   </div>
 
                   {/* Name */}
-                  <div className="px-4 py-3 text-center border-t border-gray-100">
-                    <p className="text-gray-700 text-sm font-semibold">{p.name}</p>
+                  <div className="px-2 sm:px-4 py-2 min-h-[3.25rem] flex items-center justify-center text-center border-t border-gray-100">
+                    <p className="text-gray-700 text-xs sm:text-sm font-semibold leading-snug">{p.name}</p>
                   </div>
                 </div>
               ))}
             </div>
           </div>
 
-          <button onClick={next} disabled={idx === maxIdx} aria-label="Next"
-            className="flex-shrink-0 w-11 h-11 rounded-full border-2 border-gray-200 flex items-center justify-center text-gray-500 hover:border-orange-400 hover:text-orange-500 transition-all disabled:opacity-30 disabled:cursor-not-allowed bg-white shadow-sm">
+          <button onClick={next} disabled={idx === maxIdx} aria-label="Next" className={`hidden sm:flex ${arrowCls}`}>
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
 
-        <div className="flex justify-center gap-2 mt-8">
+        <div className="flex items-center justify-center gap-4 mt-6 sm:mt-8">
+          <button onClick={prev} disabled={idx === 0} aria-label="Previous" className={`flex sm:hidden ${arrowCls}`}>
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <div className="flex justify-center gap-2">
           {Array.from({ length: maxIdx + 1 }).map((_, i) => (
             <button key={i} onClick={() => setIdx(i)} aria-label={`Go to position ${i + 1}`}
               className={`rounded-full transition-all duration-300 ${i === idx ? "w-7 h-2.5 bg-orange-500" : "w-2.5 h-2.5 bg-gray-300 hover:bg-gray-400"}`}
             />
           ))}
+          </div>
+          <button onClick={next} disabled={idx === maxIdx} aria-label="Next" className={`flex sm:hidden ${arrowCls}`}>
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
       </div>
     </section>

@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
+  BarChart3,
   DollarSign,
   MessageSquare,
   Users,
@@ -28,6 +29,7 @@ import {
 
 const navItems = [
   { href: "/admin/dashboard",   label: "Dashboard",    icon: LayoutDashboard, group: "Overview" },
+  { href: "/admin/visitors",    label: "Visitors",     icon: BarChart3,       group: "Overview" },
   { href: "/admin/donations",   label: "Donations",    icon: DollarSign,      group: "Activity" },
   { href: "/admin/messages",    label: "Messages",     icon: MessageSquare,   group: "Activity" },
   { href: "/admin/subscribers", label: "Subscribers",  icon: Users,           group: "Activity" },

@@ -10,7 +10,9 @@ import HeroSlider from "@/components/HeroSlider";
 import PartnersSlider from "@/components/PartnersSlider";
 import NewsCard from "@/components/NewsCard";
 import CountUp from "@/components/CountUp";
+import SponsorChildren from "@/components/SponsorChildren";
 import { getHeroSlides, getPartners, getCoreValues, getPrograms, getSetting, getNews, getSuccessStories } from "@/lib/queries";
+import { SPONSOR_CHILD_SETTING_KEY, parseSponsorChildContent, getChildrenSectionProps } from "@/lib/sponsorChild";
 
 const ICON_MAP: Record<string, LucideIcon> = {
   "graduation-cap": GraduationCap, users: Users, "trending-up": TrendingUp,
@@ -32,7 +34,7 @@ const IMPACT_NUMBERS = [
 ];
 
 export default async function HomePage() {
-  const [slides, partners, coreValues, programs, whoWeAreImage, fainaImage, news, stories] = await Promise.all([
+  const [slides, partners, coreValues, programs, whoWeAreImage, fainaImage, news, stories, sponsorChildRaw] = await Promise.all([
     getHeroSlides(),
     getPartners(),
     getCoreValues(),
@@ -41,7 +43,9 @@ export default async function HomePage() {
     getSetting("faina_home_image"),
     getNews(3),
     getSuccessStories(3),
+    getSetting(SPONSOR_CHILD_SETTING_KEY),
   ]);
+  const childrenSection = getChildrenSectionProps(parseSponsorChildContent(sponsorChildRaw));
 
   return (
     <>
@@ -197,6 +201,9 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* Choose a Child — managed in Admin → Sponsor a Child */}
+      {childrenSection.items.length > 0 && <SponsorChildren {...childrenSection} limit={4} />}
 
       {/* Faina Jerusalem Feature */}
       <section className="section-padding bg-gradient-to-br from-emerald-900 to-emerald-950 relative overflow-hidden">

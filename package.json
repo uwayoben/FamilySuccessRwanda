@@ -11,6 +11,7 @@
   "dependencies": {
     "@swc/helpers": "^0.5.23",
     "caniuse-lite": "^1.0.30001799",
+    "geoip-lite": "^1.4.10",
     "lucide-react": "^1.17.0",
     "mysql2": "^3.22.5",
     "next": "16.2.9",
@@ -19,6 +20,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/geoip-lite": "^1.4.4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

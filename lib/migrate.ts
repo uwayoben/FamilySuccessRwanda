@@ -229,6 +229,20 @@ const TABLE_MIGRATIONS: Migration[] = [
       }
     },
   },
+  {
+    // One row per public page view. No IP addresses are stored — only the country.
+    name: "create_site_visits",
+    sql: `CREATE TABLE IF NOT EXISTS site_visits (
+      id BIGINT AUTO_INCREMENT PRIMARY KEY,
+      visitor_id CHAR(36) NOT NULL,
+      path VARCHAR(255) NOT NULL,
+      country CHAR(2),
+      referrer VARCHAR(255),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_site_visits_created (created_at),
+      INDEX idx_site_visits_visitor (visitor_id)
+    ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci`,
+  },
 ];
 
 // ─── Seed Migrations ─────────────────────────────────────────────────────────

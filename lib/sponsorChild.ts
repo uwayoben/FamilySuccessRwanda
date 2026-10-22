@@ -2,6 +2,7 @@ export const SPONSOR_CHILD_SETTING_KEY = "sponsor_child_content";
 
 export type SponsorChildCost = { amount: string; period: string; desc: string };
 export type SponsorChildPhoto = { url: string; caption: string };
+export type SponsorChildProfile = { name: string; age: string; photo: string; story: string; sponsored: boolean };
 
 export type SponsorChildContent = {
   hero_tag: string;
@@ -15,6 +16,7 @@ export type SponsorChildContent = {
   costs: SponsorChildCost[];
   journey_text: string;
   photos: SponsorChildPhoto[];
+  children: SponsorChildProfile[]; // children waiting for a sponsor
   actions: string[];
   closing_text: string;
 };
@@ -42,6 +44,37 @@ export const DEFAULT_SPONSOR_CHILD_CONTENT: SponsorChildContent = {
   journey_text:
     "When you sponsor a child, you become part of their journey. You'll receive updates about their progress and see firsthand the impact of your generosity. It's a deeply rewarding experience — for you and for the child whose life you transform.",
   photos: [],
+  // Sample profiles — replace or delete them in the admin.
+  children: [
+    {
+      name: "Aline",
+      age: "8",
+      photo: "https://images.unsplash.com/photo-1543689604-6fe8dbcd1f59?w=800&q=80",
+      story: "Aline is in Primary 3 and loves reading. She dreams of becoming a teacher and needs support for school materials and meals.",
+      sponsored: false,
+    },
+    {
+      name: "Eric",
+      age: "11",
+      photo: "https://images.unsplash.com/photo-1548102245-c79dbcfa9f92?w=800&q=80",
+      story: "Eric enjoys football and mathematics. After losing his parents he lives with his grandmother, who struggles to pay his school fees.",
+      sponsored: false,
+    },
+    {
+      name: "Diane",
+      age: "14",
+      photo: "https://images.unsplash.com/photo-1598605170898-853b9ae903fc?w=800&q=80",
+      story: "Diane is about to start secondary school. She wants to become a nurse and help children in her community.",
+      sponsored: false,
+    },
+    {
+      name: "Patrick",
+      age: "16",
+      photo: "https://images.unsplash.com/photo-1603703182693-51a19941fa59?w=800&q=80",
+      story: "Patrick hopes to join a TVET school to study carpentry. A sponsor would cover his training and a start-up toolkit.",
+      sponsored: true,
+    },
+  ],
   actions: [
     "Sponsor a child now for as little as RWF 20,000 per month for basic needs.",
     "Make a monthly commitment to ensure ongoing care and education.",
@@ -50,6 +83,19 @@ export const DEFAULT_SPONSOR_CHILD_CONTENT: SponsorChildContent = {
   closing_text:
     "Together, we can break the cycle of poverty and family conflicts affecting a child, and embrace a brighter future for children. Your kindness can be the turning point in a child's life.",
 };
+
+// Props for the "Choose a Child" section, shared by the home and Sponsor a Child pages.
+export function getChildrenSectionProps(content: SponsorChildContent) {
+  const costs = content.costs.filter((c) => c.amount.trim() || c.desc.trim());
+  return {
+    // Sponsored children stay listed (as encouragement) but after those still waiting.
+    items: content.children
+      .filter((c) => c.name.trim())
+      .sort((a, b) => Number(a.sponsored) - Number(b.sponsored)),
+    provisions: content.provisions.map((p) => p.trim()).filter(Boolean),
+    monthlyCost: costs.find((c) => /month/i.test(c.period)) ?? costs[0],
+  };
+}
 
 const str = (val: unknown, fallback: string) => (typeof val === "string" ? val : fallback);
 
@@ -90,6 +136,17 @@ export function parseSponsorChildContent(raw: string | null | undefined): Sponso
           .filter((p): p is Record<string, unknown> => !!p && typeof p === "object")
           .map((p) => ({ url: str(p.url, ""), caption: str(p.caption, "") }))
       : d.photos,
+    children: Array.isArray(saved.children)
+      ? saved.children
+          .filter((c): c is Record<string, unknown> => !!c && typeof c === "object")
+          .map((c) => ({
+            name: str(c.name, ""),
+            age: str(c.age, ""),
+            photo: str(c.photo, ""),
+            story: str(c.story, ""),
+            sponsored: c.sponsored === true,
+          }))
+      : d.children,
     actions: strList(saved.actions, d.actions),
     closing_text: str(saved.closing_text, d.closing_text),
   };
